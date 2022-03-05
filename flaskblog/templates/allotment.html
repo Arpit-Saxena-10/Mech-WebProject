@@ -1,7 +1,0 @@
-{%extends "layout.html" %}
-{% block content %}
-    <h1>Allotment</h1>
-    {% if current_user.role=='student' %}
-        <h2>you dont have access</h2>
-    {% endif %}
-{% endblock content %}
