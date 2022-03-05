@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+  <article class="media content-section">
+    <div class="media-body">      
+      <h2 class="article-title">{{ course.course_code }}</h2>
+      <p class="article-content">{{ course.course_name }}</p>
+      <div class="article-metadata">
+        {% if current_user.role=='admin' %}
+          <div>
+            <a class="btn btn-secondary btn-sm mt-1 mb-3" href="{{ url_for('allotment') }}">Allotment</a>
+            <button type="button" class="btn btn-secondary btn-sm mt-1 mb-3">Deallotment</button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+{% endblock content %}

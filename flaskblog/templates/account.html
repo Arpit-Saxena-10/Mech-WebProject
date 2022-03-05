@@ -1,0 +1,18 @@
+{%extends "layout.html" %}
+{% block content %}
+
+<div class="content-section">
+  <div class="media">
+    <div class="media-body">
+      <h2 class="account-heading">{{ current_user.username }}</h2>
+      <p class="text-secondary">{{ current_user.email }}</p>
+      <h4 class="text-secondary">Role :  {{ current_user.role }}</h4>
+      {% if current_user.role == "student" %}
+        <p class="text-secondary">Roll Number     :{{ user.roll_number }}</p>
+        <p class="text-secondary">Phone Number    :{{ user.phone_number }}</p>
+        <p class="text-secondary">Faculty Advisor :{{ user.facad }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
