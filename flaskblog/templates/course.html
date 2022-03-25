@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+  <article class="media content-section">
+    <div class="media-body">      
+      <h2 class="article-title">{{ course.code }}</h2>
+      <p class="article-content">{{ course.name }}</p>
+      <div class="article-metadata">
+          <div>
+            <a class="btn btn-secondary btn-lg mt-1 mb-3" href="{{ url_for('allotment') }}">Allotment</a>
+          </div>
+        </div>
+    </div>
+  </article>
+{% endblock content %}
