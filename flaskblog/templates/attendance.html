@@ -1,6 +1,0 @@
-{% extends "layout.html" %}
-{% block content %}
-  <h1>Mark Attendance</h1>
-  <h5><a class="btn btn-secondary btn-lg mt-1 mb-3 mr-2" href="{{ url_for('emailOTP') }}">E-Mail</a>OTP will be sent to {{current_user.email}}</h5>
-  <h5><a class="btn btn-secondary btn-lg mt-1 mb-3 mr-2" href="{{ url_for('smsOTP') }}">SMS-OTP</a>OPT will be sent to</h5>
-{% endblock content %}
