@@ -1,0 +1,87 @@
+{%extends "layout.html" %}
+{% block content %}
+
+    <h1 style="text-align:center; margin-bottom: 45px;">TA Allotment for Professor {{ faculty.name }}</h1>
+    {% for course in courses %}
+        <div class="row" style="width:60%; margin:auto; margin-top: 3%; margin-bottom: 2%;">
+            <label>Select TA for {{course.code}} {{ course.name }}</label>
+            <select name="{{course.code}}" data-live-search="true" id="{{course.code}}" class="form-control" title="Select Student">
+                {% for student in students %}
+                <option value="{{student.id}}">{{student.name}}</option>
+                {% endfor %}
+            </select>
+            <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Course Field</th>
+                                <th>Course Code</th>
+                                <th>Section</th>
+                                <th>Student name</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        {% for course_ta in course_ta %}
+                        {% if course_ta.course_id==course.id %}
+                        {% if course_ta.section.value==course.section %}                        
+                        <tbody>
+                            <tr>
+                                <td>{{ course_ta.course.field.value }}</td>
+                                <td>{{ course_ta.course.code }}</td>
+                                <td>{{ course_ta.section.value }}</td>
+                                <td>{{ course_ta.ta.name }}</td>
+                                <td>{{ course_ta.ta.alloted }}</td>
+                                <td>
+                                    <a onclick="return confirm('Do you want to remove allotment ?');" 
+                                        href="{{ url_for('ta_allot_delete', id=course_ta.id, fac_id = faculty.id) }}"title="Remove">
+                                        <i class="material-icons" style="color:red;">Remove</i>
+                                    </a>
+                                </td>
+                            </tr>
+                        
+                        </tbody>
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    </table>
+        </div>
+    {% endfor %}
+    <div style="width:10%; margin:auto; margin-top:5%;">
+        <button onclick="allot_ta()" class="btn btn-default">Save Changes</button>
+    </div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+    <script>
+        {% for course in courses %}
+            $("#{{course.code}}").selectpicker();
+        {% endfor%}
+    </script>
+
+    <script>
+        function allot_ta() {
+
+            const courses = {{courses | tojson}};
+            var ta_list = [];
+            for(var i=0;i<courses.length;i++)
+            {
+                var student_id = $("#" + courses[i].code).val();
+                if (student_id != ''){
+                    ta_list.push({'course_id':courses[i].id,'student_id':student_id, 'section':courses[i].section});
+                }
+            }
+            $.ajax({
+                  url: "/allot_ta_fac",
+                  method: "POST",
+                  data: {'faculty_id': {{faculty.id}},'ta_list':JSON.stringify(ta_list)},
+                  success: function () { //alert(category_id)
+                      console.log('success')
+                  },
+            });
+        }
+    </script>
+{% endblock content %}

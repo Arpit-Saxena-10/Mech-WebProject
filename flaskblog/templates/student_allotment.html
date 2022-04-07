@@ -1,0 +1,66 @@
+{%extends "layout.html" %}
+{% block content %}
+    <div class="split1 left">
+        <h1 style="text-align:center; margin-bottom: 45px;">Student Allotment</h1>
+        <div class="row" >
+            <div class="col-md-6">
+                <label>Select Subfield</label>
+                <select name="subfield" data-live-search="true" id="subfield" class="form-control" title="Select Subfield">
+                    {% for field in fields %}
+                    <option value="{{field}}">{{field}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label>Select Course</label>
+                <select name="course" data-live-search="true" id="course" class="form-control" title="Select Course">
+                </select>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="split2 right">
+        <h1 style="text-align:center;">Student Allotment List</h1>
+        <hr style="width:100%;text-align:left;">
+        <table class="table table-striped sortable">
+            <thead>
+                <tr>
+                    <th>Course Field</th>
+                    <th>Course Code</th>
+                    <th>Course name</th>
+                    <th>Section</th>
+                    <th>Student</th>
+                    <th>Allotments</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course_ta in course_tas %}
+                <tr>
+                    <td>{{ course_ta.course.field.value }}</td>
+                    <td>{{ course_ta.course_id }}</td>
+                    <td>{{ course_ta.course.name }}</td>
+                    <td>{{ course_ta.section.value }}</td>
+                    <td>{{ course_ta.ta.name }}</td>
+                    <td>{{ course_ta.ta.alloted }}</td>
+                    <td>
+                        <a onclick="return confirm('Do you want to remove allotment for {{ course_ta.ta.name }}?');" 
+                            href="{{ url_for('delete_ta_entry', id=course_ta.id) }}"title="Remove">
+                            <i class="material-icons" style="color:red;">Remove</i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+    <script>
+        
+    </script>
+{% endblock content %}

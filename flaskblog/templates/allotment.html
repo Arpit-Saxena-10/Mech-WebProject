@@ -1,0 +1,224 @@
+{%extends "layout.html" %}
+{% block content %}
+    <div class="split1 left">
+        <h1 style="text-align:center; margin-bottom: 45px;">Course Allotment</h1>
+        <div class="row" >
+            <div class="col-md-6">
+                <label>Select Subfield</label>
+                <select name="subfield" data-live-search="true" id="subfield" class="form-control" title="Select Subfield">
+                    {% for field in fields %}
+                    <option value="{{field}}">{{field}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label>Select Course</label>
+                <select name="course" data-live-search="true" id="course" class="form-control" title="Select Course">
+                </select>
+            </div>
+        </div>
+        <div>
+            <br>
+            <p id="alloted_sections"> <label > </label></p>
+        </div>
+
+        <div>
+            <form id="add_sections" style="display: none">
+                <label for="quantity">Select number of sections to be added:</label>
+                <input type="number" id="quantity" name="num_sections" min="1" max="3">
+                <button type="submit" class="btn btn-default">Add</button>
+            </form>
+        </div>
+        <div class="row" id="faculty_section">
+        </div>
+    </div>
+    
+    <div class="split2 right">
+        <h1 style="text-align:center;">Allotments Table</h1>
+        <hr style="width:100%;text-align:left;">
+            <table class="table table-striped sortable">
+                <thead>
+                    <tr>
+                        <th>Course Field</th>
+                        <th>Course Code</th>
+                        <th>Course name</th>
+                        <th>Section</th>
+                        <th>Professor</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course_faculty in course_facultys %}
+                    <tr>
+                        <td>{{ course_faculty.course.field.value }}</td>
+                        <td>{{ course_faculty.course_id }}</td>
+                        <td>{{ course_faculty.course.name }}</td>
+                        <td>{{ course_faculty.section.value }}</td>
+                        <td>{{ course_faculty.faculty.name }}</td>
+                        <td>
+                            
+                            {% if course_faculty.faculty.mail_confirmation %}
+                                <a onclick="return confirm('Do you want to reset ?');" 
+                                href="{{ url_for('delete_entry', id=course_faculty.faculty.id, action=0) }}"title="Remove">
+                                    <span>&#10003;</span>
+                                </a>    
+                            {% else %}
+                                <span>&#10008;</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a onclick="return confirm('Do you want to remove allotment for {{ course_faculty.faculty.name }}?');" 
+                                href="{{ url_for('delete_entry', id=course_faculty.id, action=1) }}"title="Remove">
+                                <i class="material-icons" style="color:red;">Remove</i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% if course_facultys %}
+            <button class="btn btn-default" type="submit" style="margin-left: 43%;">
+                <a href="{{ url_for('send_multiple_mail') }}"
+                   onclick="return confirm('Do you want to send mails to all the professors?');">
+                    Send Mail
+                </a>
+            </button>
+        {% endif %}
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.2/js/bootstrap-select.min.js"></script>
+
+    
+    <script>
+
+        $(document).ready(function () {
+            $("#subfield").selectpicker();
+            $("#course").selectpicker();
+            //$("#faculty").selectpicker();
+            $("#section").selectpicker();
+
+            var sections;
+
+            function get_course(subfield) {
+                console.log(subfield)
+                $.ajax({
+                    url: "/course",
+                    method: "POST",
+                    data: {'subfield': subfield},
+                    //dataType: "json",
+                    success: function (courses) { //alert(category_id)
+
+                        console.log(courses)
+                        var html = "";
+                        for (var count = 0; count < courses.length; count++) {
+                            html += '<option value="' + courses[count].id + '">' + courses[count].name + "</option>";
+                        }
+                            $("#course").html(html);
+                            $("#course").selectpicker("refresh");
+                    },
+                });
+            }
+
+            function get_alloted_section(course_id) {
+                console.log(course_id);
+                $.ajax({
+                    url: "/alloted_sections",
+                    method: "POST",
+                    data: {'course_id': course_id},
+                    //dataType: "json",
+                    success: function (course_sections) { //alert(category_id)
+                        console.log(course_sections)
+                        var html = "";
+                        for (var i = 0; i < course_sections.length; i++) {
+                            //html += '<option value="' + courses[count].id + '">' + courses[count].name + "</option>";
+                            html += 'Section - ' + course_sections[i].section + ' has been alloted to Professor - ' + course_sections[i].prof +' <br>';
+                        }
+                        $("#alloted_sections").html(html);
+                        $("#add_sections").show();
+                    },
+                });
+            }
+
+        $(document).on("change", "#subfield", function () {
+                var subfield = $("#subfield").val();
+                get_course(subfield);
+
+                // Add Code to reset alloted_sections and add_sections
+                $("#alloted_sections").html("");
+                $("#add_sections").hide();
+                $("#faculty_section").html("");
+            });
+
+        $(document).on("change", "#course", function () {
+                var course_id = $("#course").val();
+                get_alloted_section(course_id);
+
+                // Add Code to reset faculty dropdown
+                $("#faculty_section").html("");
+            });
+        });
+
+        $(document).on("click", "#btnSubmit", function () {
+
+            section_faculty_list = [];
+            for (var i = 0; i < sections.length; i++) {
+                var fac_id = $("#faculty"+sections[i]).val();
+                console.log('prof '+fac_id +' for section '+sections[i])
+                section_faculty_list.push({'section':sections[i],'faculty_id':fac_id})
+            }
+            var course_id = $("#course").val();
+            console.log(section_faculty_list)
+            $.ajax({
+                    url: "/allot_section_fac",
+                    method: "POST",
+                    data: {'section_faculty_list': JSON.stringify(section_faculty_list),'course_id':course_id},
+                    //dataType: "json",
+                    success: function (course_sections) { //alert(category_id)
+                        console.log('success')
+                    },
+                });
+        });
+
+        $("#add_sections").on('submit', function (e) {
+            //ajax call here
+            e.preventDefault();
+            var subfield = $("#subfield").val();
+            var course_id = $("#course").val();
+            var num_sections = $("#quantity").val();
+            console.log('check '+subfield + ' '+course_id+' '+num_sections)
+            $.ajax({
+                    url: "/get_fac",
+                    method: "POST",
+                    data: {'course_id': course_id,'subfield':subfield,'num_sections':num_sections},
+                    //dataType: "json",
+                    success: function (resp) { //alert(category_id)
+                        console.log(resp)
+                        sections = resp.sections;
+                        var html = '<br>'
+                        for (var i = 0; i < resp.sections.length; i++) {
+                            html += '<div class="col-md-3"> ';
+
+                                html += '<select name="faculty'+ resp.sections[i] +' " data-live-search="true" id="faculty'+resp.sections[i]+ '" class="form-control" title="Faculty for '+ resp.sections[i] +'"> ';
+                                for (var j = 0; j < resp.profs.length; j++) {
+                                    html += '<option value="' + resp.profs[j].id + '">' + resp.profs[j].name + "</option>";
+                                }
+                                html += '</select>';
+                            html += ' </div>'
+                        }
+                        html += '<button id = "btnSubmit" type="button" class="btn btn-dark">Submit</button>';
+                        $("#faculty_section").html(html);
+                        $("#add_sections").show();
+                        for (var i = 0; i < resp.sections.length; i++) {
+                            $("#faculty"+resp.sections[i]).selectpicker();
+                        }
+                    },
+                });
+                
+            //stop form submission
+        });
+
+   </script>
+{% endblock content %}
